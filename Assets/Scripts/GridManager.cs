@@ -60,14 +60,14 @@ public class GridManager : MonoBehaviour
         {
             cell.InitAfter();
 
-            float cordX = cell.x / (float)gridSize * noiseScale + offsetX;
-            float cordY = cell.y / (float)gridSize * noiseScale + offsetY;
+            float cordX = (float)cell.x * noiseScale + offsetX;
+            float cordY = (float)cell.y * noiseScale + offsetY;
 
             float height = Mathf.PerlinNoise(cordX, cordY);
 
             Vector2 tmp = new Vector2(cell.transform.position.x, cell.transform.position.y);
 
-            if (Vector2.Distance(tmp, center) > grassSizeAroundHub * cellSize && height > stoneSeuil)
+            if (Vector2.Distance(tmp, center) > grassSizeAroundHub * cellSize && height > .4f && height < .5f)
             {
                 cell.SetBlock(BlockType.Stone);
             }
@@ -191,7 +191,7 @@ public class GridManager : MonoBehaviour
         newElement.transform.position = cell.transform.position;
     }
 
-    private Vector2 GetCellPositionFromWorldPos(Vector2 pos)
+    public Vector2 GetCellPositionFromWorldPos(Vector2 pos)
     {
         Vector2Int indexs = GetCellIndexFromPosition(pos);
 

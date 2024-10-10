@@ -17,6 +17,11 @@ public class RessourceManager : MonoBehaviour
         goldText.text = "0";
     }
 
+    private void Start()
+    {
+        AddCoin(10);
+    }
+
     public void AddCoin(int amount)
     {
         gold += amount;
