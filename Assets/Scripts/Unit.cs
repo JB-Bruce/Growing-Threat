@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Unit : Entity
 {
     public float acceleration;
     public float maxSpeed;
@@ -23,7 +23,7 @@ public class Unit : MonoBehaviour
 
     float spawnRandom;
 
-    List<Cell> path = new();
+    public List<Cell> path { get; private set; } = new();
 
     Vector3 tmpTarget;
 
@@ -43,6 +43,8 @@ public class Unit : MonoBehaviour
     public bool attackOnSight = false;
 
     bool canAttack = true;
+
+    List<Building> touchedBuildings = new();
 
     private void Awake()
     {
@@ -101,6 +103,18 @@ public class Unit : MonoBehaviour
                 return;
             }
         }
+
+        if(leader.faction != Faction.Player && CheckForBuildings(out Building building, Faction.Player))
+        {
+            MoveTo(building.transform.position, attackDistance);
+            if (canAttack && touchedBuildings.Contains(building))
+            {
+                building.TakeDamage(damage);
+                canAttack = false;
+                Invoke("ResetAttack", attackInterval);
+            }
+            return;
+        }
         
 
         for (int i = path.Count - 1; i > 0; i--)
@@ -150,12 +164,19 @@ public class Unit : MonoBehaviour
         return enemy != null;
     }
 
+    private bool CheckForBuildings(out Building building, Faction faction)
+    {
+        building = manager.GetNearestBuildingOf(this, faction, viewDistance);
+
+        return building != null;
+    }
+
     public void AddPath(List<Cell> newPath)
     {
         path.AddRange(newPath);
     }
 
-    private void ClearPath()
+    public void ClearPath()
     {
         Cell lastCell = path[path.Count - 1];
 
@@ -172,6 +193,22 @@ public class Unit : MonoBehaviour
         if(health <= 0)
         {
             leader.LooseUnit(this);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.transform.TryGetComponent<Building>(out Building building))
+        {
+            touchedBuildings.Add(building);
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.transform.TryGetComponent<Building>(out Building building))
+        {
+            touchedBuildings.Remove(building);
         }
     }
 }

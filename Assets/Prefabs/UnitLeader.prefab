@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 77d7b30a7523f194489ab481556082d5, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 77d7b30a7523f194489ab481556082d5, type: 2}
@@ -298,6 +298,11 @@ MonoBehaviour:
   units: []
   unitNumberText: {fileID: 5759908688336212664}
   unitSpecialization: 0
+  graphics:
+  - {fileID: 21438528503251180}
+  - {fileID: 8634678856617343063}
+  - {fileID: 5959078837396335283}
+  - {fileID: 5759908688336212664}
 --- !u!1 &5702738025117097540
 GameObject:
   m_ObjectHideFlags: 0

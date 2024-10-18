@@ -99,14 +99,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockList:
-  - color: {r: 0.3764706, g: 0.5372549, b: 0.40784314, a: 1}
-    colorHighlight: {r: 0.25947848, g: 0.46226418, b: 0.29904643, a: 1}
+  - sprite: {fileID: 21300000, guid: 1769d1c24bbc4934fa04030b7270b00e, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    colorHighlight: {r: 0.67050344, g: 0.84276724, b: 0.7036311, a: 1}
     type: 0
     isWalkable: 1
-  - color: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
-    colorHighlight: {r: 0.2924528, g: 0.2924528, b: 0.2924528, a: 1}
+  - sprite: {fileID: 21300000, guid: 3bf55814b39f6a345b27bc380da04b86, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    colorHighlight: {r: 0.70440245, g: 0.70440245, b: 0.70440245, a: 1}
     type: 1
     isWalkable: 0
+  - sprite: {fileID: 21300000, guid: 3781fa4d03674bc409813f8085d40ea2, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    colorHighlight: {r: 0.5710809, g: 0.77272606, b: 0.78616345, a: 1}
+    type: 2
+    isWalkable: 0
+  unitInCell: {fileID: 0}
   cellRenderer: {fileID: 8171915535730695209}
   topCell: {fileID: 0}
   bottomCell: {fileID: 0}

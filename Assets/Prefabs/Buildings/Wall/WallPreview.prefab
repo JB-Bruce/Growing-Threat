@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7994152122590740891}
   - component: {fileID: 1500326251265514633}
-  - component: {fileID: 3224194555533051848}
   m_Layer: 0
   m_Name: WallPreview
   m_TagString: Untagged
@@ -73,9 +72,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}
-  m_Color: {r: 0.67295593, g: 0.67295593, b: 0.67295593, a: 0.18431373}
+  m_SortingOrder: 2
+  m_Sprite: {fileID: 21300000, guid: 42639a1778bd2bf4cbbf6760d29eaa0c, type: 3}
+  m_Color: {r: 0.9308176, g: 0.9308176, b: 0.9308176, a: 0.18431373}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -85,16 +84,3 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3224194555533051848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 371344473015140477}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1b27a94be796a049be0cee0da3be218, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  elementSprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}

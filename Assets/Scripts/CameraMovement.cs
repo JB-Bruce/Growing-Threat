@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraMovement : MonoBehaviour
 {
     public float cameraSpeed;
+    public float cameraSprintSpeed;
     public Camera cam;
 
     public float minZoom;
@@ -18,9 +19,8 @@ public class CameraMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.D)) move += Vector2.right;
         if (Input.GetKey(KeyCode.A)) move += Vector2.left;
 
-        var lastMove = move.normalized * cameraSpeed * Time.deltaTime;
+        var lastMove = move.normalized * cameraSpeed * Time.deltaTime * (Input.GetKey(KeyCode.LeftShift) ? cameraSprintSpeed : 1);
         transform.position += new Vector3(lastMove.x, lastMove.y, 0);
-
         Vector2 dm = Input.mouseScrollDelta;
         cam.orthographicSize = Mathf.Clamp(cam.orthographicSize - dm.y, minZoom, maxZoom);
     }

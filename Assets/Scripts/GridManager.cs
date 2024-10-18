@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
     public static GridManager instance;
+
+    public bool changeMap = false;
 
     [SerializeField] int gridSize;
     [SerializeField] float cellSize;
@@ -23,25 +26,85 @@ public class GridManager : MonoBehaviour
     public float stoneSeuil;
     public float noiseScale;
 
+    [Header("River Settings")]
+
+    public float RiverNoiseScale;
+    public float riverWidth;
+    public float grassAroundRiver;
+    public float riverStrength;
+
     float offsetX;
     float offsetY;
 
-    Vector2 center;
+    public Vector2 center;
+
+    public List<(int, int)> spawnableBorders = new();
+
+    BuildingManager buildingManager;
 
     private void Awake()
     {
         instance = this;
-
-        offsetX = Random.Range(0f, 1000f);
-        offsetY = Random.Range(0f, 1000f);
     }
 
     public void Init()
     {
+        buildingManager = BuildingManager.instance;
+
         float totalLength = (gridSize - 1) * cellSize;
         gridStartPos = -Vector2.one * (totalLength / 2f);
 
         center = new(gridStartPos.x + totalLength / 2f, gridStartPos.y + totalLength / 2f);
+
+        bool passed = false;
+        int iteration = 0;
+
+        offsetX = 0;
+        offsetY = 0;
+
+        do
+        {
+            spawnableBorders.Clear();
+            offsetX = Random.Range(0f, 1000f);
+            offsetY = Random.Range(0f, 1000f);
+
+            if (iteration == 10) offsetX = 0; offsetY = 0;
+
+            float[,] testGrid = new float[gridSize, gridSize];
+
+            for (int i = 0; i < gridSize; i++)
+            {
+                for (int j = 0; j < gridSize; j++)
+                {
+                    testGrid[i, j] = GetHeight(i, j);
+                }
+            }
+
+            (int, int) centerGrid = ((int)(gridSize/2), (int)(gridSize/2));
+            
+            List<(int, int)> accessibles = new();
+            
+            for (int i = 0; i < gridSize; i++)
+            {
+                if (CanBorderAccessCenter(testGrid, (i, 0), centerGrid, riverWidth, stoneSeuil)) accessibles.Add((i, 0));
+                if (CanBorderAccessCenter(testGrid, (i, gridSize - 1), centerGrid, riverWidth, stoneSeuil)) accessibles.Add((i, gridSize - 1));
+                if (CanBorderAccessCenter(testGrid, (0, i), centerGrid, riverWidth, stoneSeuil)) accessibles.Add((0, i));
+                if (CanBorderAccessCenter(testGrid, (gridSize - 1, i), centerGrid, riverWidth, stoneSeuil)) accessibles.Add((gridSize - 1, i));
+            }
+
+            print(accessibles.Count);
+
+            if(accessibles.Count > 0)
+            {
+                spawnableBorders = accessibles;
+                passed = true;
+            }
+
+            iteration++;
+        } while (!passed && iteration <= 10);
+
+
+
 
         for (int i = 0; i < gridSize; i++)
         {
@@ -60,27 +123,64 @@ public class GridManager : MonoBehaviour
         {
             cell.InitAfter();
 
-            float cordX = (float)cell.x * noiseScale + offsetX;
-            float cordY = (float)cell.y * noiseScale + offsetY;
-
-            float height = Mathf.PerlinNoise(cordX, cordY);
+            float height = GetHeight(cell);
 
             Vector2 tmp = new Vector2(cell.transform.position.x, cell.transform.position.y);
 
-            if (Vector2.Distance(tmp, center) > grassSizeAroundHub * cellSize && height > .4f && height < .5f)
+            if (Vector2.Distance(tmp, center) > grassSizeAroundHub * cellSize)
             {
-                cell.SetBlock(BlockType.Stone);
+                if(height > stoneSeuil)
+                {
+                    cell.SetBlock(BlockType.Stone);
+                    continue;
+                }
+                else if (height < riverWidth)
+                {
+                    cell.SetBlock(BlockType.Water);
+                    continue;
+                }
             }
-            else
-            {
-                cell.SetBlock(BlockType.Grass);
-            }
+
+            cell.SetBlock(BlockType.Grass);
+            
+        }
+
+        foreach((int, int) pos in spawnableBorders)
+        {
+            GetCell(pos.Item1, pos.Item2).Over();
         }
 
     }
 
+
+    private float GetHeight(Cell cell)
+    {
+        return GetHeight(cell.x, cell.y);
+    }
+
+    private float GetHeight(int x, int y)
+    {
+        float cordX = (float)x * noiseScale + offsetX;
+        float cordY = (float)y * noiseScale + offsetY;
+
+        float height = Mathf.PerlinNoise(cordX, cordY);
+
+        cordX = (float)x * RiverNoiseScale + offsetX + 69f;
+        cordY = (float)y * RiverNoiseScale + offsetY + 69f;
+
+        float height2 = Mathf.Abs(Mathf.PerlinNoise(cordX, cordY) - 0.5f) * 2f * riverStrength;
+
+        return (height + height2) / (2f * riverStrength);
+    }
+
     private void Update()
     {
+        if (changeMap)
+        {
+            changeMap = false;
+            ResetMap();
+        }
+
         bool rMouse = Input.GetMouseButtonDown(1);
         bool lMouse = Input.GetMouseButtonDown(0);
 
@@ -112,6 +212,18 @@ public class GridManager : MonoBehaviour
         }*/
     }
 
+    private void ResetMap()
+    {
+        foreach (var item in cells)
+        {
+            Destroy(item.transform.gameObject);
+        }
+
+        cells.Clear();
+
+        Init();
+    }
+
     public Cell GetCell(int x, int y)
     {
         Cell returnCell = null;
@@ -125,7 +237,7 @@ public class GridManager : MonoBehaviour
     {
         Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
 
-        if (IsPosOverACell(mousePos))
+        if (IsPosOverACell(mousePos) && !buildingManager.isBuildingSelected)
         {
             Cell overedCell = GetCellFromPos(mousePos);
             foreach (Cell n in cells) { n.UnOver(); }
@@ -149,9 +261,9 @@ public class GridManager : MonoBehaviour
         if (IsPosOverACell(mousePos))
         {
             Cell overedCell = GetCellFromPos(mousePos);
-            if (selectedCell != null)
+            if (selectedCell != null && selectedCell.unitInCell != null)
             {
-                List<Cell> path = FindPath(selectedCell, overedCell, out bool completedPath);
+                List<Cell> path = FindPath(selectedCell, overedCell, out bool completedPath, selectedCell.unitInCell.faction);
 
                 foreach (Cell n in cells) { n.UnOver(); }
 
@@ -163,7 +275,7 @@ public class GridManager : MonoBehaviour
                         n.Over();
                     }
                 }
-                selectedCell = null;
+                selectedCell = overedCell;
 
 
             }
@@ -220,7 +332,7 @@ public class GridManager : MonoBehaviour
         return new(indexX, indexY);
     }
 
-    public List<Cell> FindPath(Cell startCell, Cell targetCell, out bool completedPath)
+    public List<Cell> FindPath(Cell startCell, Cell targetCell, out bool completedPath, Faction faction)
     {
 
         List<Cell> openSet = new List<Cell>();
@@ -256,7 +368,7 @@ public class GridManager : MonoBehaviour
                 return RetracePath(startCell, targetCell);
             }
 
-            foreach (Cell neighbor in GetNeighbors(currentCell))
+            foreach (Cell neighbor in GetNeighbors(currentCell, faction))
             {
                 if (closedSet.Contains(neighbor))
                 {
@@ -282,6 +394,58 @@ public class GridManager : MonoBehaviour
         return RetracePath(startCell, closestCell);
     }
 
+    public bool CanBorderAccessCenter(float[,] testGrid, (int, int) start, (int, int) center, float min, float max)
+    {
+        int rows = testGrid.GetLength(0);
+        int cols = testGrid.GetLength(1);
+
+        bool IsValid(int x, int y) =>
+            x >= 0 && x < rows && y >= 0 && y < cols &&
+            testGrid[x, y] > min && testGrid[x, y] < max;
+
+        if (!IsValid(start.Item1, start.Item2)) return false;
+
+        (int, int)[] directions = new (int, int)[]
+        {
+        (-1, 0), // haut
+        (1, 0),  // bas
+        (0, -1), // gauche
+        (0, 1)   // droite
+        };
+
+        Queue<(int, int)> openSet = new Queue<(int, int)>();
+        HashSet<(int, int)> closedSet = new HashSet<(int, int)>();
+
+        openSet.Enqueue(start);
+
+        while (openSet.Count > 0)
+        {
+            var current = openSet.Dequeue();
+
+            if (current == center)
+            {
+                return true;
+            }
+
+            closedSet.Add(current);
+
+            foreach (var direction in directions)
+            {
+                int newX = current.Item1 + direction.Item1;
+                int newY = current.Item2 + direction.Item2;
+                var neighbor = (newX, newY);
+
+                if (IsValid(newX, newY) && !closedSet.Contains(neighbor))
+                {
+                    openSet.Enqueue(neighbor);
+                    closedSet.Add(neighbor);
+                }
+            }
+        }
+
+        return false;
+    }
+
     int GetDistance(Cell nodeA, Cell nodeB)
     {
         int dstX = Mathf.Abs(nodeA.x - nodeB.x);
@@ -292,46 +456,46 @@ public class GridManager : MonoBehaviour
         return 14 * dstX + 10 * (dstY - dstX);
     }
 
-    List<Cell> GetNeighbors(Cell cell)
+    List<Cell> GetNeighbors(Cell cell, Faction faction)
     {
         List<Cell> neighbors = new List<Cell>();
 
         bool top = false, bot = false, right = false, left = false;
 
-        if(cell.topCell != null && cell.topCell.IsWalkable())
+        if(cell.topCell != null && cell.topCell.IsWalkable(faction))
         {
             neighbors.Add(cell.topCell);
             top = true;
         }
-        if(cell.bottomCell != null && cell.bottomCell.IsWalkable())
+        if(cell.bottomCell != null && cell.bottomCell.IsWalkable(faction))
         {
             neighbors.Add(cell.bottomCell);
             bot = true;
         }
-        if(cell.leftCell != null && cell.leftCell.IsWalkable())
+        if(cell.leftCell != null && cell.leftCell.IsWalkable(faction))
         {
             neighbors.Add(cell.leftCell);
             left = true;
         }
-        if(cell.rightCell != null && cell.rightCell.IsWalkable())
+        if(cell.rightCell != null && cell.rightCell.IsWalkable(faction))
         {
             neighbors.Add(cell.rightCell);
             right = true;
         }
 
-        if(top && right && cell.topRightCell != null && cell.topRightCell.IsWalkable())
+        if(top && right && cell.topRightCell != null && cell.topRightCell.IsWalkable(faction))
         {
             neighbors.Add(cell.topRightCell);
         }
-        if(top && left && cell.topLeftCell != null && cell.topLeftCell.IsWalkable())
+        if(top && left && cell.topLeftCell != null && cell.topLeftCell.IsWalkable(faction))
         {
             neighbors.Add(cell.topLeftCell);
         }
-        if(bot && right && cell.bottomRightCell != null && cell.bottomRightCell.IsWalkable())
+        if(bot && right && cell.bottomRightCell != null && cell.bottomRightCell.IsWalkable(faction))
         {
             neighbors.Add(cell.bottomRightCell);
         }
-        if(bot && left && cell.bottomLeftCell != null && cell.bottomLeftCell.IsWalkable())
+        if(bot && left && cell.bottomLeftCell != null && cell.bottomLeftCell.IsWalkable(faction))
         {
             neighbors.Add(cell.bottomLeftCell);
         }

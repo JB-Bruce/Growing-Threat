@@ -17,6 +17,6 @@ public class BuildingPlacer : MonoBehaviour
     {
         GameObject town = Instantiate(townPrefab);
 
-        GridManager.instance.SetElement(townPrefab.GetComponent<CellElement>(), new(0, 0));
+        GridManager.instance.SetElement(townPrefab.GetComponentInChildren<CellElement>(), new(0, 0));
     }
 }

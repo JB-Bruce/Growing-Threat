@@ -175,7 +175,7 @@ MonoBehaviour:
   defensiveBuildings:
   - prefab: {fileID: 1630365395724803231, guid: 3451038e14db3c44c869d0b840a25476, type: 3}
     preview: {fileID: 371344473015140477, guid: a0d644e19b3b76b41bd00363ff48e5ca, type: 3}
-    sprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}
+    sprite: {fileID: 21300000, guid: 42639a1778bd2bf4cbbf6760d29eaa0c, type: 3}
     name: Wall
     cost: 1
   farmParent: {fileID: 497360833}
@@ -240,7 +240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf19c6f3f9caf7f4ea07064101dd374e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  townPrefab: {fileID: 6519178029807957866, guid: 523cd17e7db3862458187a10971b198b, type: 3}
+  townPrefab: {fileID: 3674667210989524289, guid: 1f4a9d336b2975c4e9bac77e89f9def4, type: 3}
 --- !u!4 &297785408
 Transform:
   m_ObjectHideFlags: 0
@@ -544,9 +544,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraSpeed: 10
+  cameraSprintSpeed: 3
   cam: {fileID: 519420031}
-  minZoom: 6
-  maxZoom: 25
+  minZoom: 2
+  maxZoom: 50
 --- !u!1 &528986696
 GameObject:
   m_ObjectHideFlags: 0
@@ -581,9 +582,9 @@ RectTransform:
   - {fileID: 2020710276}
   m_Father: {fileID: 1499191733}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -888.2431, y: -523}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: -888.2431, y: 17}
   m_SizeDelta: {x: 80, y: 142.58939}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &528986698
@@ -701,7 +702,7 @@ GameObject:
   - component: {fileID: 864927231}
   - component: {fileID: 864927230}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Gold
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -718,12 +719,13 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 890544447}
   m_Father: {fileID: 1499191733}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 905, y: -483}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -55, y: 57}
   m_SizeDelta: {x: 75, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &864927230
@@ -789,16 +791,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 890544446}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1499191733}
+  m_Father: {fileID: 864927229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 760, y: -483}
+  m_AnchoredPosition: {x: -145.00006, y: 0.000061035156}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &890544448
@@ -1538,7 +1540,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 864927229}
-  - {fileID: 890544447}
   - {fileID: 528986697}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1623,14 +1624,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8104885c181444f9b23f2f50654a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: 81
+  changeMap: 0
+  gridSize: 101
   cellSize: 1
   cellPrefab: {fileID: 2631252015784819324, guid: d00c46d3e69c7004db1e2e9fd9092277, type: 3}
   gridParent: {fileID: 1617534918}
   cam: {fileID: 519420031}
   grassSizeAroundHub: 3.75
-  stoneSeuil: 0.5
-  noiseScale: 0.02
+  stoneSeuil: 0.3
+  noiseScale: 0.1
+  RiverNoiseScale: 0.02
+  riverWidth: 0.15
+  grassAroundRiver: 1
+  riverStrength: 2
+  center: {x: 0, y: 0}
 --- !u!4 &1617534918
 Transform:
   m_ObjectHideFlags: 0

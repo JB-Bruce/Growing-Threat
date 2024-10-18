@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public class Cell : MonoBehaviour
@@ -7,6 +8,7 @@ public class Cell : MonoBehaviour
     [System.Serializable]
     public struct ColorBlock
     {
+        public Sprite sprite;
         public Color color;
         public Color colorHighlight;
         public BlockType type;
@@ -16,10 +18,13 @@ public class Cell : MonoBehaviour
     ColorBlock selectedBlock;
     [SerializeField] List<ColorBlock> blockList;
 
-    UnitLeader unitInCell;
+
+    public UnitLeader unitInCell;
 
     [SerializeField] SpriteRenderer cellRenderer;
     CellElement cellElement;
+
+    public bool isOccupied { get { return cellElement != null || unitInCell != null || selectedBlock.type != BlockType.Grass; } private set { }}
 
     [HideInInspector] public Cell topCell;
     [HideInInspector] public Cell bottomCell;
@@ -43,6 +48,7 @@ public class Cell : MonoBehaviour
     {
         get { return gCost + hCost;}
     }
+
 
     public Cell parentCell;
 
@@ -105,6 +111,7 @@ public class Cell : MonoBehaviour
             if(block.type == type)
             {
                 selectedBlock = block;
+                cellRenderer.sprite = selectedBlock.sprite;
                 cellRenderer.color = selectedBlock.color;
                 box2d.enabled = !selectedBlock.isWalkable;
                 return;
@@ -122,9 +129,9 @@ public class Cell : MonoBehaviour
         return false;
     }
 
-    public bool IsWalkable()
+    public bool IsWalkable(Faction faction)
     {
-        return cellElement == null && selectedBlock.isWalkable;
+        return (cellElement == null || (faction == Faction.Player ? !cellElement.blockFrienflyUnits : !cellElement.blockEnemyUnits)) && selectedBlock.isWalkable;
     }
 }
 
@@ -133,5 +140,6 @@ public enum BlockType
 {
     Grass,
     Stone,
+    Water,
     None
 }

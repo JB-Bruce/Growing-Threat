@@ -33,7 +33,7 @@ public class BuildingInit : MonoBehaviour
 
     public void SetPossibility(bool possibility)
     {
-        cross.SetActive(possibility);
+        cross.SetActive(!possibility);
     }
 
     public void Place()

@@ -75,8 +75,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}
-  m_Color: {r: 0.61635214, g: 0.50587386, b: 0.50587386, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 42639a1778bd2bf4cbbf6760d29eaa0c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -99,6 +99,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   elementSprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}
+  blockFrienflyUnits: 1
+  blockEnemyUnits: 1
+  attractEnemy: 1
+  life: 15
+  faction: 0
 --- !u!61 &8769630825938166092
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -142,5 +147,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8828125, y: 1}
+  m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0

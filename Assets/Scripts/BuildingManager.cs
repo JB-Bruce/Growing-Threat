@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
@@ -19,6 +20,8 @@ public class BuildingManager : MonoBehaviour
     public List<BuildingElements> defensiveBuildings = new(); 
     List<GameObject> defensiveGOs = new();
 
+    List<Building> buildings = new();
+
     public Transform farmParent;
     public Transform defensiveParent;
 
@@ -26,6 +29,8 @@ public class BuildingManager : MonoBehaviour
     GameObject instantiatedBuilding = null;
 
     GridManager gridManager;
+
+    public bool isBuildingSelected { get { return instantiatedBuilding != null; } private set { } }
 
     public static BuildingManager instance;
 
@@ -53,23 +58,42 @@ public class BuildingManager : MonoBehaviour
 
     private void Update()
     {
-        if(instantiatedBuilding != null)
+        Vector2 cellUnderMouse = gridManager.GetCellPositionFromWorldPos(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        Cell cellOn = gridManager.GetCellFromPos(cellUnderMouse);
+
+        bool possible = !cellOn.isOccupied;
+
+        if (instantiatedBuilding != null)
         {
-            instantiatedBuilding.transform.position = gridManager.GetCellPositionFromWorldPos(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            instantiatedBuilding.transform.position = cellUnderMouse;
+            instantiatedBuilding.GetComponent<BuildingInit>().SetPossibility(possible);
         }
 
         if (instantiatedBuilding != null)
         {
-            if(Input.GetMouseButtonDown(0))
+            if(Input.GetMouseButtonDown(0) && possible)
             {
                 instantiatedBuilding.GetComponent<BuildingInit>().Place();
+                Building newBuilding = instantiatedBuilding.GetComponentInChildren<Building>();
+                buildings.Add(newBuilding);
+
+                cellOn.SetElement(newBuilding);
+                newBuilding.SetCell(cellOn);
+
                 SelectBuilding(selectedBuilding);
+                UnitManager.instance.UpdatePaths(cellOn);
             }
             else if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
             {
-                
+                Destroy(instantiatedBuilding);
+                instantiatedBuilding = null;
             }
         }
+    }
+
+    public void RemoveBuilding(Building building)
+    {
+        buildings.Remove(building);
     }
 
     private GameObject CreateBuildingButton(BuildingElements building, Transform buildingParent)
@@ -99,6 +123,7 @@ public class BuildingManager : MonoBehaviour
             go.SetActive(true);
         }
     }
+    
 
     public void ClickFarm()
     {
@@ -118,6 +143,20 @@ public class BuildingManager : MonoBehaviour
         selectedBuilding = building;
         instantiatedBuilding = Instantiate(buildingInitPrefab, buildingsParent);
         instantiatedBuilding.GetComponent<BuildingInit>().Init(building, Vector2.zero);
+    }
+
+    public List<Building> GetAllBuildings(Faction faction, bool selectOnlyAttractable = true)
+    {
+        List<Building> newBuildings = new List<Building>();
+
+        foreach (var go in buildings)
+        {
+            if(go.faction == faction)
+                if (selectOnlyAttractable && !go.attractEnemy) continue;
+                newBuildings.Add(go);
+        }
+
+        return newBuildings;
     }
 }
 
