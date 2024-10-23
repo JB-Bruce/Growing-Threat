@@ -129,6 +129,7 @@ MonoBehaviour:
   y: 0
   gCost: 0
   hCost: 0
+  traversalCostMultiplier: 5
   parentCell: {fileID: 0}
 --- !u!61 &1618108242070727617
 BoxCollider2D:

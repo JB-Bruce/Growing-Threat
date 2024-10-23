@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -56,6 +56,11 @@ public class BuildingManager : MonoBehaviour
         ClickFarm();
     }
 
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current.IsPointerOverGameObject();
+    }
+
     private void Update()
     {
         Vector2 cellUnderMouse = gridManager.GetCellPositionFromWorldPos(Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -71,11 +76,12 @@ public class BuildingManager : MonoBehaviour
 
         if (instantiatedBuilding != null)
         {
-            if(Input.GetMouseButtonDown(0) && possible)
+            if(Input.GetMouseButtonDown(0) && possible && !IsPointerOverUI())
             {
+                print("ff");
                 instantiatedBuilding.GetComponent<BuildingInit>().Place();
                 Building newBuilding = instantiatedBuilding.GetComponentInChildren<Building>();
-                buildings.Add(newBuilding);
+                AddBuilding(newBuilding);
 
                 cellOn.SetElement(newBuilding);
                 newBuilding.SetCell(cellOn);
@@ -89,6 +95,11 @@ public class BuildingManager : MonoBehaviour
                 instantiatedBuilding = null;
             }
         }
+    }
+
+    public void AddBuilding(Building building)
+    {
+        buildings.Add(building);
     }
 
     public void RemoveBuilding(Building building)

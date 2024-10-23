@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GridManager : MonoBehaviour
 {
@@ -9,7 +9,7 @@ public class GridManager : MonoBehaviour
     public bool changeMap = false;
 
     [SerializeField] int gridSize;
-    [SerializeField] float cellSize;
+    public float cellSize;
 
     [SerializeField] GameObject cellPrefab;
     [SerializeField] Transform gridParent;
@@ -92,8 +92,6 @@ public class GridManager : MonoBehaviour
                 if (CanBorderAccessCenter(testGrid, (gridSize - 1, i), centerGrid, riverWidth, stoneSeuil)) accessibles.Add((gridSize - 1, i));
             }
 
-            print(accessibles.Count);
-
             if(accessibles.Count > 0)
             {
                 spawnableBorders = accessibles;
@@ -115,7 +113,6 @@ public class GridManager : MonoBehaviour
                 var newCell = go.GetComponent<Cell>();
                 newCell.Init(this, j, i);
                 cells.Add(newCell);
-                
             }
         }
 
@@ -173,6 +170,11 @@ public class GridManager : MonoBehaviour
         return (height + height2) / (2f * riverStrength);
     }
 
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current.IsPointerOverGameObject();
+    }
+
     private void Update()
     {
         if (changeMap)
@@ -184,12 +186,14 @@ public class GridManager : MonoBehaviour
         bool rMouse = Input.GetMouseButtonDown(1);
         bool lMouse = Input.GetMouseButtonDown(0);
 
-        if (lMouse)
+        bool overUI = IsPointerOverUI();
+
+        if (lMouse && !overUI)
         {
             HandleLeftMouse();
         }
 
-        if (rMouse)
+        if (rMouse && !overUI)
         {
             HandleRightMouse();
         }
@@ -295,12 +299,14 @@ public class GridManager : MonoBehaviour
         return isIn;
     }
 
-    public void SetElement(CellElement newElement, Vector2 pos)
+    public Cell SetElement(CellElement newElement, Vector2 pos)
     {
         Cell cell = GetCellFromPos(pos);
 
         cell.SetElement(newElement);
         newElement.transform.position = cell.transform.position;
+
+        return cell;
     }
 
     public Vector2 GetCellPositionFromWorldPos(Vector2 pos)
@@ -375,7 +381,8 @@ public class GridManager : MonoBehaviour
                     continue;
                 }
 
-                int newMovementCostToNeighbor = currentCell.gCost + GetDistance(currentCell, neighbor);
+                float newMovementCostToNeighbor = currentCell.gCost + GetDistance(currentCell, neighbor) + neighbor.traversalCost;
+                //if (neighbor.traversalCost > 0f) print(neighbor.traversalCost);
                 if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor))
                 {
                     neighbor.gCost = newMovementCostToNeighbor;
@@ -456,32 +463,34 @@ public class GridManager : MonoBehaviour
         return 14 * dstX + 10 * (dstY - dstX);
     }
 
-    List<Cell> GetNeighbors(Cell cell, Faction faction)
+    List<Cell> GetNeighbors(Cell cell, Faction faction, bool takeDiags = true)
     {
         List<Cell> neighbors = new List<Cell>();
 
         bool top = false, bot = false, right = false, left = false;
 
-        if(cell.topCell != null && cell.topCell.IsWalkable(faction))
+        if(cell.topCell != null && cell.topCell.IsWalkableOrBreakable(faction, out bool breakableT))
         {
             neighbors.Add(cell.topCell);
-            top = true;
+            top = !breakableT;
         }
-        if(cell.bottomCell != null && cell.bottomCell.IsWalkable(faction))
+        if(cell.bottomCell != null && cell.bottomCell.IsWalkableOrBreakable(faction, out bool breakableB))
         {
             neighbors.Add(cell.bottomCell);
-            bot = true;
+            bot = !breakableB;
         }
-        if(cell.leftCell != null && cell.leftCell.IsWalkable(faction))
+        if(cell.leftCell != null && cell.leftCell.IsWalkableOrBreakable(faction, out bool breakableL))
         {
             neighbors.Add(cell.leftCell);
-            left = true;
+            left = !breakableL;
         }
-        if(cell.rightCell != null && cell.rightCell.IsWalkable(faction))
+        if(cell.rightCell != null && cell.rightCell.IsWalkableOrBreakable(faction, out bool breakableR))
         {
             neighbors.Add(cell.rightCell);
-            right = true;
+            right = !breakableR;
         }
+
+        if(!takeDiags) return neighbors;
 
         if(top && right && cell.topRightCell != null && cell.topRightCell.IsWalkable(faction))
         {

@@ -115,6 +115,25 @@ public class UnitManager : MonoBehaviour
         return nearest;
     }
 
+    public List<Building> GetNearestBuildingsOf(Unit baseUnit, Faction faction, float range = Mathf.Infinity)
+    {
+        return GetOnlyEntityInRange(BuildingManager.instance.GetAllBuildings(faction, false), range, baseUnit.transform);
+
+    }
+
+    private List<T> GetOnlyEntityInRange<T>(List<T> l, float range, Transform origin) where T : Entity
+    {
+        List<T> list = new List<T>();
+
+        foreach (var item in l)
+        {
+            if(Vector2.Distance(origin.position, item.transform.position) <= range)
+                list.Add(item);
+        }
+
+        return list;
+    }
+
     public void UpdatePaths(Cell updatedCell = null)
     {
         foreach(UnitLeader unitLeader in unitLeaders)

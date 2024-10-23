@@ -42,11 +42,18 @@ public class Cell : MonoBehaviour
 
     GridManager grid;
 
-    public int gCost;
-    public int hCost;
-    public int fCost
+    public float gCost;
+    public float hCost;
+    public float fCost
     {
-        get { return gCost + hCost;}
+        get { return gCost + hCost; }
+    }
+
+    public float traversalCostMultiplier;
+
+    public float traversalCost
+    {
+        get { return cellElement != null && cellElement is Building b ? b.life * traversalCostMultiplier : 0f; }
     }
 
 
@@ -71,6 +78,18 @@ public class Cell : MonoBehaviour
         bottomRightCell = grid.GetCell(x + 1, y - 1);
         bottomLeftCell = grid.GetCell(x - 1, y - 1);
         topLeftCell = grid.GetCell(x - 1, y + 1);
+    }
+
+    public bool TryGetBuilding(out Building building)
+    {
+        building = null;
+
+        if (cellElement is Building newBuilding)
+        {
+            building = newBuilding;
+            return true;
+        }
+        return false;
     }
 
     public void Over()
@@ -129,6 +148,11 @@ public class Cell : MonoBehaviour
         return false;
     }
 
+    public bool IsWalkableOrBreakable(Faction faction, out bool breakable)
+    {
+        breakable = (cellElement != null) ? cellElement.canBeDestroyed : false;
+        return (cellElement == null || (faction == Faction.Player ? !cellElement.blockFrienflyUnits : (!cellElement.blockEnemyUnits || cellElement.canBeDestroyed))) && selectedBlock.isWalkable;
+    }
     public bool IsWalkable(Faction faction)
     {
         return (cellElement == null || (faction == Faction.Player ? !cellElement.blockFrienflyUnits : !cellElement.blockEnemyUnits)) && selectedBlock.isWalkable;

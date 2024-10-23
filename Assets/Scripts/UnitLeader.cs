@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.IO;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class UnitLeader : Entity
 {
@@ -18,9 +16,12 @@ public class UnitLeader : Entity
 
     public UnitSpecialization unitSpecialization;
 
-    GridManager gridManager;
+    public GridManager gridManager;
 
     public List<Component> graphics = new();
+
+
+    public List<Building> authorizedNonAttractableBuildingsToDestroy { get; private set; } = new();
 
     public void Init(Faction newFaction, Transform unitParent, int unitNumber = 5, UnitSpecialization newUnitSpe = UnitSpecialization.None)
     {
@@ -54,6 +55,12 @@ public class UnitLeader : Entity
 
     public void SetDestination(List<Cell> path)
     {
+        authorizedNonAttractableBuildingsToDestroy.Clear();
+        foreach (var cell in path)
+        {
+            if (cell.TryGetBuilding(out Building building)) authorizedNonAttractableBuildingsToDestroy.Add(building);
+        }
+
         transform.position = path[path.Count -1].transform.position;
 
         foreach (Unit unit in units)
@@ -75,6 +82,13 @@ public class UnitLeader : Entity
     public void UpdatePathfinding()
     {
         List<Cell> newPath = gridManager.FindPath(gridManager.GetCellFromPos(units[0].transform.position), gridManager.GetCellFromPos(transform.position), out bool finished, faction);
+
+        authorizedNonAttractableBuildingsToDestroy.Clear();
+        foreach (var cell in newPath)
+        {
+            if (cell.TryGetBuilding(out Building building)) authorizedNonAttractableBuildingsToDestroy.Add(building);
+        }
+
         foreach (Unit unit in units)
         {
             unit.ClearPath();
@@ -92,10 +106,11 @@ public class UnitLeader : Entity
         units.Remove(unit);
         unitNumberText.text = units.Count.ToString();
         Destroy(unit.gameObject);
+        
+        if(faction == Faction.Barbarian) RessourceManager.instance.AddCoin(1);
 
         if(units.Count == 0)
         {
-            if(faction == Faction.Barbarian) RessourceManager.instance.AddCoin(1);
             UnitManager.instance.LooseLeader(this);
         }
 

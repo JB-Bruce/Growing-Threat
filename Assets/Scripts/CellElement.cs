@@ -7,4 +7,5 @@ public class CellElement : Entity
     public Sprite elementSprite;
     public bool blockFrienflyUnits;
     public bool blockEnemyUnits;
+    public bool canBeDestroyed;
 }

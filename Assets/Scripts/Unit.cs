@@ -104,7 +104,7 @@ public class Unit : Entity
             }
         }
 
-        if(leader.faction != Faction.Player && CheckForBuildings(out Building building, Faction.Player))
+        if(leader.faction != Faction.Player && CheckNearestAttractableBuilding(out Building building, true) && building != null)
         {
             MoveTo(building.transform.position, attackDistance);
             if (canAttack && touchedBuildings.Contains(building))
@@ -120,12 +120,19 @@ public class Unit : Entity
         for (int i = path.Count - 1; i > 0; i--)
         {
             Vector3 newDir = path[i].transform.position - (transform.position - offsetFromLeader);
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, newDir, newDir.magnitude, movementLayerMask);
-            if (hit.collider == null)
+            //RaycastHit2D hit = Physics2D.Raycast(transform.position, newDir, newDir.magnitude, movementLayerMask);
+
+            if(CanReachDestinationForward2(transform.position, newDir, newDir.magnitude))
             {
                 tmpTarget = path[i].transform.position;
                 break;
             }
+
+            /*if (hit.collider == null)
+            {
+                tmpTarget = path[i].transform.position;
+                break;
+            }*/
         }
 
 
@@ -135,6 +142,158 @@ public class Unit : Entity
             ClearPath();
         }
             
+    }
+
+    public bool CanReachDestinationForward(Vector2 start, Vector2 direction, float length)
+    {
+        direction = direction.normalized;
+
+        Vector2 currentPos = start;
+
+        float cellSize = leader.gridManager.cellSize;
+        float semiSize = cellSize / 2f;
+
+        int index = 0;
+
+        while (length > 0)
+        {
+            index++;
+            if(index >= 100)
+            {
+                print("WARNNG : reached max index");
+                return false;
+            }
+
+
+            Cell currentCell = leader.gridManager.GetCellFromPos(new(currentPos.x, currentPos.y));
+            if (!currentCell.IsWalkable(leader.faction))
+            {
+                return false;
+            }
+
+
+            // Déterminer les bordures de la cellule actuelle
+            float leftBorder = currentCell.transform.position.x - semiSize;           // Bord gauche
+            float rightBorder = currentCell.transform.position.x + semiSize; // Bord droit
+            float bottomBorder = currentCell.transform.position.y - semiSize;         // Bord bas
+            float topBorder = currentCell.transform.position.y + semiSize; // Bord haut
+
+            // Calculer les bordures en fonction de la direction
+            float nextVerticalBorder = (direction.x > 0) ? rightBorder : leftBorder;
+            float nextHorizontalBorder = (direction.y > 0) ? topBorder : bottomBorder;
+
+            // Calculer tMax
+            float tMaxX = (direction.x == 0) ? float.MaxValue : (nextVerticalBorder - currentPos.x) / direction.x;
+            float tMaxY = (direction.y == 0) ? float.MaxValue : (nextHorizontalBorder - currentPos.y) / direction.y;
+
+
+            float t = Mathf.Min(tMaxX, tMaxY);
+            currentPos += direction * t;
+
+            if (t < 0.0001f)
+            {
+                print("WARNNG : t est trop petit, arrêt de la boucle");
+                return false;
+            }
+            else
+            {
+                print("T est assez grand");
+            }
+
+            length = Mathf.Max(length - t, 0.001f);
+        }
+
+        return true;
+    }
+
+    public bool CanReachDestinationForward2(Vector2 start, Vector2 direction, float length)
+    {
+        if (length < 0 || direction == Vector2.zero) return false;
+
+        // Normaliser la direction pour obtenir une ligne droite unitaire
+        direction.Normalize();
+
+        // Initialisation des variables de Bresenham
+        Vector2 currentPos = start;
+        Vector2 endPos = start + direction * length;
+
+        float x0 = currentPos.x;
+        float y0 = currentPos.y;
+        float x1 = endPos.x;
+        float y1 = endPos.y;
+
+        float dx = Mathf.Abs(x1 - x0);
+        float dy = Mathf.Abs(y1 - y0);
+        int sx = (x0 < x1) ? 1 : -1;
+        int sy = (y0 < y1) ? 1 : -1;
+        float err = dx - dy;
+
+        int index = 0;
+
+        // Parcourir la grille en suivant l'algorithme de Bresenham
+        while (true)
+        {
+            index++;
+            if (index >= 1000)
+            {
+                print("ERROR StackOverflow");
+                return false;
+            }
+
+            // Vérifier si la cellule actuelle est praticable
+            Cell currentCell = leader.gridManager.GetCellFromPos(new Vector2(x0, y0));
+            if (!currentCell.IsWalkable(leader.faction))
+            {
+                return false;
+            }
+
+            // Vérifier si nous avons atteint le point final (ou très proche)
+            if (Mathf.Abs(x0 - x1) < 0.001f && Mathf.Abs(y0 - y1) < 0.001f) break;
+
+            // Calculer l'erreur pour déterminer la prochaine cellule
+            float e2 = 2 * err;
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx)
+            {
+                err += dx;
+                y0 += sy;
+            }
+        }
+
+        return true;
+    }
+
+    private bool CheckNearestAttractableBuilding(out Building building, bool includePathBlockers = false)
+    {
+        building = null;
+
+        if(CheckForBuildings(out List<Building> buildings, Faction.Player))
+        {
+            Building nearestBuilding = null;
+            float nearestDistance = Mathf.Infinity;
+
+            foreach (var item in buildings)
+            {
+                if(!item.attractEnemy && !leader.authorizedNonAttractableBuildingsToDestroy.Contains(item)) continue;
+
+                float newDistance = Vector2.Distance(item.transform.position, transform.position);
+                if (newDistance < nearestDistance)
+                {
+                    nearestDistance = newDistance;
+                    nearestBuilding = item;
+                }
+            }
+
+            building = nearestBuilding;
+
+            return true;
+        }
+
+        return false;
     }
 
     private void ResetAttack()
@@ -164,11 +323,11 @@ public class Unit : Entity
         return enemy != null;
     }
 
-    private bool CheckForBuildings(out Building building, Faction faction)
+    private bool CheckForBuildings(out List<Building> buildings, Faction faction)
     {
-        building = manager.GetNearestBuildingOf(this, faction, viewDistance);
+        buildings = manager.GetNearestBuildingsOf(this, faction, viewDistance);
 
-        return building != null;
+        return buildings.Count > 0;
     }
 
     public void AddPath(List<Cell> newPath)
