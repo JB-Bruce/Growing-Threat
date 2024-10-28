@@ -7,7 +7,7 @@ public class RessourceManager : MonoBehaviour
 {
     public TextMeshProUGUI goldText;
 
-    int gold = 0;
+    public int gold { get; private set; } = 0;
 
     public static RessourceManager instance;
     private void Awake()
@@ -19,12 +19,20 @@ public class RessourceManager : MonoBehaviour
 
     private void Start()
     {
-        AddCoin(10);
+        AddCoin(100);
     }
 
     public void AddCoin(int amount)
     {
         gold += amount;
         goldText.text = gold.ToString();
+    }
+
+    public bool TryRemoveCoin(int amount) 
+    { 
+        if(gold - amount < 0) return false;
+
+        AddCoin(-amount);
+        return true;
     }
 }

@@ -9,6 +9,8 @@ public class UnitManager : MonoBehaviour
 
     public GameObject unitLeaderPrefab;
 
+    int unitSpawned = 0;
+
 
     GridManager gridManager;
 
@@ -25,6 +27,8 @@ public class UnitManager : MonoBehaviour
 
     public static UnitManager instance;
 
+    float fps;
+
     private void Awake()
     {
         instance = this;
@@ -40,7 +44,7 @@ public class UnitManager : MonoBehaviour
         SpawnUnits(new Vector2(0, -3), 5, Faction.Player);
         SpawnUnits(new Vector2(1, 0), 9, Faction.Player);
 
-        InvokeRepeating("SpawnUnitAtBorder", 1f, 1f);
+        InvokeRepeating("SpawnUnitAtBorder", 1f, 10f);
     }
 
     private void SpawnUnitAtBorder()
@@ -49,7 +53,10 @@ public class UnitManager : MonoBehaviour
 
         var unit = SpawnUnits((spawnCell.Item1 - center.Item1, spawnCell.Item2 - center.Item2), 5, Faction.Barbarian);
         unit.SetDestination(new Vector2(0f, 0f));
+
+        unitSpawned++;
     }
+
 
     public UnitLeader SpawnUnits(Cell cellOn, int amount, Faction faction)
     {

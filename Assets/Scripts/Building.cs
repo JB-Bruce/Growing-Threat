@@ -11,7 +11,7 @@ public class Building : CellElement
     public UnityEvent onBuildingDestroyed;
     public UnityEvent<float, float> onBuildingDamaged;
 
-    Cell cellOn;
+    protected Cell cellOn;
 
 
     private void Awake()
@@ -41,6 +41,8 @@ public class Building : CellElement
 
         return false;
     }
+
+    
 
 
 

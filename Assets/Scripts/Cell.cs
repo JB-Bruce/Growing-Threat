@@ -49,6 +49,7 @@ public class Cell : MonoBehaviour
         get { return gCost + hCost; }
     }
 
+
     public float traversalCostMultiplier;
 
     public float traversalCost
@@ -95,11 +96,13 @@ public class Cell : MonoBehaviour
     public void Over()
     {
         cellRenderer.color = selectedBlock.colorHighlight;
+        cellElement?.Select();
     }
 
     public void UnOver()
     {
         cellRenderer.color = selectedBlock.color;
+        cellElement?.UnSelect();
     }
 
     public void SetElement(CellElement newCellElement)
@@ -121,6 +124,61 @@ public class Cell : MonoBehaviour
         }
 
         return false;
+    }
+
+    public List<Cell> GetAdjacentCells(bool takeDiagonals = true)
+    {
+        List<Cell> cells = new List<Cell>()
+        {
+            topCell,
+            bottomCell,
+            rightCell,
+            leftCell
+        };
+
+        if(!takeDiagonals) return FilterNonExistingCells(cells);
+
+        cells.AddRange(new List<Cell>(){
+            topLeftCell,
+            topRightCell,
+            bottomLeftCell,
+            bottomRightCell
+        });
+
+        return FilterNonExistingCells(cells);
+    }
+
+    public List<Cell> FilterNonExistingCells(List<Cell> cells)
+    {
+        List<Cell> existingCells = new();
+
+        foreach(Cell cell in cells)
+        {
+            if(cell != null)
+                existingCells.Add(cell);
+        }
+
+        return existingCells;
+    }
+
+    public bool DoesIntersectWithCircle(Vector2 circleCenter, float radius)
+    {
+        Vector2 pos = transform.position;
+        Vector2 scale = transform.localScale;
+
+        // Trouver le point le plus proche du centre du cercle sur le carré
+        float closestX = Mathf.Clamp(circleCenter.x, pos.x - scale.x / 2, pos.x + scale.x / 2);
+        float closestY = Mathf.Clamp(circleCenter.y, pos.y - scale.y / 2, pos.y + scale.y / 2);
+
+        // Calculer la distance entre le centre du cercle et ce point le plus proche
+        float distanceX = circleCenter.x - closestX;
+        float distanceY = circleCenter.y - closestY;
+
+        // Calculer la distance au carré
+        float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+        // Vérifier si la distance est inférieure ou égale au carré du rayon
+        return distanceSquared <= (radius * radius);
     }
 
     public void SetBlock(BlockType type)

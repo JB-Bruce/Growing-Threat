@@ -30,6 +30,8 @@ public class BuildingManager : MonoBehaviour
 
     GridManager gridManager;
 
+    RessourceManager ressourceManager;
+
     public bool isBuildingSelected { get { return instantiatedBuilding != null; } private set { } }
 
     public static BuildingManager instance;
@@ -42,6 +44,7 @@ public class BuildingManager : MonoBehaviour
     private void Start()
     {
         gridManager = GridManager.instance;
+        ressourceManager = RessourceManager.instance;
 
         foreach (var building in farmBuildings)
         {
@@ -78,15 +81,17 @@ public class BuildingManager : MonoBehaviour
         {
             if(Input.GetMouseButtonDown(0) && possible && !IsPointerOverUI())
             {
-                print("ff");
+                if (!ressourceManager.TryRemoveCoin(selectedBuilding.cost)) return;
+
                 instantiatedBuilding.GetComponent<BuildingInit>().Place();
                 Building newBuilding = instantiatedBuilding.GetComponentInChildren<Building>();
                 AddBuilding(newBuilding);
 
+                
                 cellOn.SetElement(newBuilding);
                 newBuilding.SetCell(cellOn);
 
-                SelectBuilding(selectedBuilding);
+                SelectBuilding(selectedBuilding, false);
                 UnitManager.instance.UpdatePaths(cellOn);
             }
             else if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
@@ -149,8 +154,13 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    public void SelectBuilding(BuildingElements building)
+    public void SelectBuilding(BuildingElements building, bool destroyPrevious = true)
     {
+        if (instantiatedBuilding != null && destroyPrevious)
+        {
+            Destroy(instantiatedBuilding);
+        }
+
         selectedBuilding = building;
         instantiatedBuilding = Instantiate(buildingInitPrefab, buildingsParent);
         instantiatedBuilding.GetComponent<BuildingInit>().Init(building, Vector2.zero);

@@ -178,6 +178,11 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 42639a1778bd2bf4cbbf6760d29eaa0c, type: 3}
     name: Wall
     cost: 1
+  - prefab: {fileID: 5894323991227953733, guid: aac459c82fa403b40b8fc7f08087914c, type: 3}
+    preview: {fileID: 5192946332805082730, guid: dce31d7da9e9d5a489a0bc52ac8c8887, type: 3}
+    sprite: {fileID: 21300000, guid: 69d2862a110fd024cb7fe183da54a065, type: 3}
+    name: Barrack
+    cost: 5
   farmParent: {fileID: 497360833}
   defensiveParent: {fileID: 1821419986}
 --- !u!1 &264453695

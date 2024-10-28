@@ -8,4 +8,7 @@ public class CellElement : Entity
     public bool blockFrienflyUnits;
     public bool blockEnemyUnits;
     public bool canBeDestroyed;
+
+    public virtual void Select() { }
+    public virtual void UnSelect() { }
 }
