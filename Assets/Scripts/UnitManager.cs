@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UnitManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class UnitManager : MonoBehaviour
 
     int unitSpawned = 0;
 
+    public float delayBetweenEnemySpawn;
 
     GridManager gridManager;
 
@@ -28,10 +30,18 @@ public class UnitManager : MonoBehaviour
     public static UnitManager instance;
 
     float fps;
+    public TextMeshProUGUI fpsText;
+
+    List<(Collider2D, Faction)> desactiveColliders = new();
 
     private void Awake()
     {
         instance = this;
+    }
+
+    private void Update()
+    {
+        fps = 1f / Time.deltaTime;
     }
 
     public void Init()
@@ -40,11 +50,16 @@ public class UnitManager : MonoBehaviour
 
         center = ((int)gridManager.center.x, (int)gridManager.center.y);
 
-        SpawnUnits(new Vector2(0, -1), 9, Faction.Player);
-        SpawnUnits(new Vector2(0, -3), 5, Faction.Player);
+        SpawnUnits(new Vector2(-1, 0), 9, Faction.Player);
         SpawnUnits(new Vector2(1, 0), 9, Faction.Player);
 
-        InvokeRepeating("SpawnUnitAtBorder", 1f, 10f);
+        InvokeRepeating("SpawnUnitAtBorder", 1f, delayBetweenEnemySpawn);
+        InvokeRepeating("ShowFPS", 0f, .1f);
+    }
+
+    private void ShowFPS()
+    {
+        fpsText.text = unitSpawned.ToString() + " - " + (Mathf.FloorToInt(fps)).ToString();
     }
 
     private void SpawnUnitAtBorder()
@@ -53,8 +68,6 @@ public class UnitManager : MonoBehaviour
 
         var unit = SpawnUnits((spawnCell.Item1 - center.Item1, spawnCell.Item2 - center.Item2), 5, Faction.Barbarian);
         unit.SetDestination(new Vector2(0f, 0f));
-
-        unitSpawned++;
     }
 
 
@@ -63,8 +76,21 @@ public class UnitManager : MonoBehaviour
         GameObject go = Instantiate(unitLeaderPrefab, cellOn.transform.position, Quaternion.identity, unitParent);
         UnitLeader newUnitLeader = go.GetComponent<UnitLeader>();
         unitLeaders.Add(newUnitLeader);
-        newUnitLeader.Init(faction, unitParent, amount);
+        var units = newUnitLeader.Init(faction, unitParent, amount);
         cellOn.TrySetUnit(newUnitLeader);
+
+        unitSpawned += amount;
+
+        foreach (var item in desactiveColliders)
+        {
+            if(item.Item2 == faction)
+            {
+                foreach (Unit unit in units)
+                {
+                    unit.DesactiveCollision(item.Item1);
+                }
+            }
+        }
 
         return newUnitLeader;
     }
@@ -101,23 +127,28 @@ public class UnitManager : MonoBehaviour
 
     public Unit GetNearestEnemyOf(Unit baseUnit, float range = Mathf.Infinity)
     {
+        return GetNearestEnemyOf(baseUnit.transform, baseUnit.leader.faction, range);
+    }
+
+    public Unit GetNearestEnemyOf(Transform baseT, Faction faction, float range = Mathf.Infinity)
+    {
         List<Unit> entities = new();
 
         foreach (UnitLeader leader in unitLeaders)
         {
-            if (leader.faction != baseUnit.leader.faction)
+            if (leader.faction != faction)
             {
                 entities.AddRange(leader.units);
             }
         }
-        Unit nearest = GetNearestEntityOf<Unit>(baseUnit, entities, range);
+        Unit nearest = GetNearestEntityOf<Unit>(baseT, entities, range);
 
         return nearest;
     }
 
     public Building GetNearestBuildingOf(Unit baseUnit, Faction faction, float range = Mathf.Infinity)
     {
-        Building nearest = GetNearestEntityOf<Building>(baseUnit, BuildingManager.instance.GetAllBuildings(faction), range); ;
+        Building nearest = GetNearestEntityOf<Building>(baseUnit.transform, BuildingManager.instance.GetAllBuildings(faction), range); ;
 
         return nearest;
     }
@@ -151,15 +182,42 @@ public class UnitManager : MonoBehaviour
     }
 
     
+    public void DesactiveCollision(BoxCollider2D col, Faction faction)
+    {
+        desactiveColliders.Add((col, faction));
 
-    public T GetNearestEntityOf<T>(Unit baseUnit, List<T> entities, float range = Mathf.Infinity) where T : Entity
+        foreach (UnitLeader uLeader in unitLeaders)
+        {
+            if(uLeader.faction == faction)
+            {
+                foreach (Unit unit in uLeader.units)
+                {
+                    unit.DesactiveCollision(col);
+                }
+            }
+        }
+    }
+
+    public void RemoveDesactiveCollision(Collider2D col)
+    {
+        for (int i = 0; i < desactiveColliders.Count; i++)
+        {
+            if (desactiveColliders[i].Item1 == col)
+            {
+                desactiveColliders.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    public T GetNearestEntityOf<T>(Transform baseT, List<T> entities, float range = Mathf.Infinity) where T : Entity
     {
         T nearest = null;
         float lowestDist = Mathf.Infinity;
 
         foreach (T entity in entities)
         {
-            float newDist = Vector2.Distance(baseUnit.transform.position, entity.transform.position);
+            float newDist = Vector2.Distance(baseT.position, entity.transform.position);
             if (newDist < range && newDist < lowestDist)
             {
                 nearest = entity;

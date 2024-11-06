@@ -166,17 +166,17 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 1
-      inSlope: 0.081899695
-      outSlope: 0.081899695
+      inSlope: 0.05035803
+      outSlope: 0.05035803
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1.3043742
-      value: 1.1068279
-      inSlope: -0.0027661212
-      outSlope: -0.0027661212
+      time: 1.1420512
+      value: 1.0575114
+      inSlope: 0.0042603984
+      outSlope: 0.0042603984
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -191,10 +191,10 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.37844527
     - serializedVersion: 3
-      time: 3.8046672
-      value: 0.89551973
-      inSlope: 0.0021992326
-      outSlope: 0.0021992326
+      time: 3.8428752
+      value: 0.9624448
+      inSlope: 0.0019085743
+      outSlope: 0.0019085743
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -202,8 +202,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 5.0183535
       value: 0.99999774
-      inSlope: 0.0860832
-      outSlope: 0.0860832
+      inSlope: 0.031946957
+      outSlope: 0.031946957
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -211,6 +211,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  showPath: 0
+  showChosenDirection: 0
+  hidePaths: 0
   movementLayerMask:
     serializedVersion: 2
     m_Bits: 55
@@ -220,6 +223,10 @@ MonoBehaviour:
   attackDistance: 0.21
   viewDistance: 2
   attackDistanceFromTheDestination: 3
+  attackOnSight: 0
+  followPathSkip: 0.3
+  lookingForEnemySkip: 0.15
+  lookingForBuildingSkip: 0.15
 --- !u!50 &5664017609215457622
 Rigidbody2D:
   serializedVersion: 4

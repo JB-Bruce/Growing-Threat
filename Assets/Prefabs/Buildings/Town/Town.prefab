@@ -99,6 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1b27a94be796a049be0cee0da3be218, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  elementName: Town
   elementSprite: {fileID: -2135585597343286014, guid: 5aa8b770bc43046bc8d993d0d5b7f4a5, type: 3}
   blockFrienflyUnits: 1
   blockEnemyUnits: 1

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public class Cell : MonoBehaviour
@@ -15,7 +14,7 @@ public class Cell : MonoBehaviour
         public bool isWalkable;
     }
 
-    ColorBlock selectedBlock;
+    public ColorBlock selectedBlock { get; private set; }
     [SerializeField] List<ColorBlock> blockList;
 
 

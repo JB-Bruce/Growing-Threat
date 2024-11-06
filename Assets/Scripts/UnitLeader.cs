@@ -23,7 +23,7 @@ public class UnitLeader : Entity
 
     public List<Building> authorizedNonAttractableBuildingsToDestroy { get; private set; } = new();
 
-    public void Init(Faction newFaction, Transform unitParent, int unitNumber = 5, UnitSpecialization newUnitSpe = UnitSpecialization.None)
+    public List<Unit> Init(Faction newFaction, Transform unitParent, int unitNumber = 5, UnitSpecialization newUnitSpe = UnitSpecialization.None)
     {
         gridManager = GridManager.instance;
 
@@ -51,6 +51,45 @@ public class UnitLeader : Entity
                 else if(item is Behaviour) ((Behaviour)item).enabled = false;
             }
         }
+
+        return units;
+    }
+
+    public void Merge(ref UnitLeader newLeader)
+    {
+        if (unitSpecialization != newLeader.unitSpecialization)
+            return;
+
+        for (int i = units.Count; i < 9; i++)
+        {
+            if (newLeader.units.Count <= 0)
+                break;
+
+
+            if(newLeader.TryRemoveUnit(out Unit unit))
+            {
+                units.Add(unit);
+                unit.leader = this;
+            }
+        }
+
+        ActualiseUnits();
+    }
+
+    public bool TryRemoveUnit(out Unit unit)
+    {
+        unit = null;
+        if(units.Count > 0)
+        {
+            unit = units[0];
+            units.RemoveAt(0);
+
+            ActualiseUnits();
+
+            return true;
+        }
+
+        return false;
     }
 
     public void SetDestination(List<Cell> path)
@@ -104,12 +143,18 @@ public class UnitLeader : Entity
     public void LooseUnit(Unit unit)
     {
         units.Remove(unit);
-        unitNumberText.text = units.Count.ToString();
         Destroy(unit.gameObject);
         
         if(faction == Faction.Barbarian) RessourceManager.instance.AddCoin(1);
 
-        if(units.Count == 0)
+        ActualiseUnits();
+    }
+
+    private void ActualiseUnits()
+    {
+        unitNumberText.text = units.Count.ToString();
+
+        if (units.Count == 0)
         {
             UnitManager.instance.LooseLeader(this);
         }

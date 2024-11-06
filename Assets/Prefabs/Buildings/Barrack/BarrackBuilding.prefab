@@ -752,6 +752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe152f842c69e948b63815ead85f65f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  elementName: Barrack
   elementSprite: {fileID: 21300000, guid: 1a1749ecb471f0647b70e5f61a5b0239, type: 3}
   blockFrienflyUnits: 1
   blockEnemyUnits: 1

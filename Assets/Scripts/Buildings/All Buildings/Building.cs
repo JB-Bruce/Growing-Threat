@@ -19,6 +19,12 @@ public class Building : CellElement
         maxLife = life;
     }
 
+    protected void Start()
+    {
+        if (!GetComponent<BoxCollider2D>().isTrigger && !blockFrienflyUnits)
+            UnitManager.instance.DesactiveCollision(GetComponent<BoxCollider2D>(), Faction.Player);
+    }
+
     public void SetFaction(Faction newFaction)
     {
         faction = newFaction;
@@ -32,6 +38,9 @@ public class Building : CellElement
 
         if (life <= 0)
         {
+            if (!GetComponent<BoxCollider2D>().isTrigger && !blockFrienflyUnits)
+                UnitManager.instance.RemoveDesactiveCollision(GetComponent<BoxCollider2D>());
+
             BuildingManager.instance.RemoveBuilding(this);
             cellOn.SetElement(null);
             onBuildingDestroyed.Invoke();

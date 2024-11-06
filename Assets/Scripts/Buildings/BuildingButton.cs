@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class BuildingButton : MonoBehaviour
 {
-    BuildingElements building;
+    public BuildingElements building {  get; private set; }
 
     public Image image;
     public Button button;

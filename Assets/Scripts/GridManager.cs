@@ -110,6 +110,7 @@ public class GridManager : MonoBehaviour
             {
                 Vector2 newPos = gridStartPos + new Vector2(j * cellSize, i * cellSize);
                 GameObject go = Instantiate(cellPrefab, newPos, Quaternion.identity, gridParent);
+                go.name = "cell(" + i + "," + j + ")";
                 var newCell = go.GetComponent<Cell>();
                 newCell.Init(this, j, i);
                 cells.Add(newCell);
@@ -144,7 +145,7 @@ public class GridManager : MonoBehaviour
 
         foreach((int, int) pos in spawnableBorders)
         {
-            GetCell(pos.Item1, pos.Item2).Over();
+            //GetCell(pos.Item1, pos.Item2).Over();
         }
 
     }
@@ -208,12 +209,12 @@ public class GridManager : MonoBehaviour
                 
             }
 
-
             foreach (Cell n in cells2)
             {
                 n.Over();
             }
         }*/
+ 
     }
 
     private void ResetMap()
@@ -271,6 +272,12 @@ public class GridManager : MonoBehaviour
 
                 foreach (Cell n in cells) { n.UnOver(); }
 
+                if (overedCell.unitInCell != null)
+                {
+                    overedCell.unitInCell.Merge(ref selectedCell.unitInCell);
+
+                    overedCell.unitInCell.SetDestination(path);
+                }
 
                 if (selectedCell.TrySetDestination(path))
                 {
@@ -279,7 +286,9 @@ public class GridManager : MonoBehaviour
                         n.Over();
                     }
                 }
-                selectedCell = overedCell;
+
+
+                selectedCell = overedCell.unitInCell != null ? selectedCell : overedCell;
 
 
             }
