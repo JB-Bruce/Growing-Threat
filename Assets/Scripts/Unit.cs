@@ -61,6 +61,8 @@ public class Unit : Entity
     public float lookingForBuildingSkip;
     float lookingForBuildingTime;
 
+    Collision2D col2d;
+
 
     private void OnValidate()
     {
@@ -138,7 +140,7 @@ public class Unit : Entity
         spawnRandom += Random.Range(-0.1f, .1f);
     }
 
-    public void Init(UnitLeader newLeader, Vector2 posToKeep, Color newColor, bool _attackOnSight = false)
+    public void Init(UnitLeader newLeader, Vector2 posToKeep, Sprite newSprite, bool _attackOnSight = false)
     {
         transform.position = newLeader.transform.position + new Vector3(posToKeep.x, posToKeep.y, 0);
         leader = newLeader;
@@ -150,7 +152,7 @@ public class Unit : Entity
 
         attackOnSight = _attackOnSight;
 
-        sp.color = newColor;
+        sp.sprite = newSprite;
     }
 
     public void ChangeOffset(Vector2 newOffset)
@@ -336,6 +338,8 @@ public class Unit : Entity
 
             if (!currentCell.IsWalkable(leader.faction))
             {
+                if (currentCell == endCell)
+                    return true;
                 return false;
             }
         }
@@ -392,6 +396,19 @@ public class Unit : Entity
 
         if (dist > stoppingDistance)
         {
+            if (rb.velocity.magnitude < 0.15f && col2d != null && col2d.contacts.Length > 0 && Vector2.Distance(transform.position, target) > .7f) 
+            {
+                print(this);
+                if (Vector2.Dot(col2d.contacts[0].normal, dir) < 0)
+                {
+                    rb.AddForce(-Vector2.Perpendicular(dir).normalized * acceleration * Time.deltaTime * 5f);
+                }
+                else
+                {
+                    rb.AddForce(Vector2.Perpendicular(dir).normalized * acceleration * Time.deltaTime * 5f);
+                }
+            }
+
             rb.AddForce(dir.normalized * Time.deltaTime * acceleration * (dist < stopingDistance ? stopingCurve.Evaluate(dist / stopingDistance) : 1f) * randomSpeedCurve.Evaluate((Time.time + spawnRandom) % 5));
             rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxSpeed);
             return false;
@@ -437,6 +454,14 @@ public class Unit : Entity
         if(health <= 0)
         {
             leader.LooseUnit(this);
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!collision.transform.TryGetComponent<Unit>(out Unit unit))
+        {
+            col2d = collision;
         }
     }
 

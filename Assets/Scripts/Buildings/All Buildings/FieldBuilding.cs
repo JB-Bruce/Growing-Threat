@@ -8,7 +8,7 @@ public class FieldBuilding : Building
     [SerializeField] int incomeAmount;
     float interval = 0f;
 
-    [SerializeField] GameObject incomePrefab;
+    [SerializeField] ParticleSystem collectEffect;
 
     private void Update()
     {
@@ -17,9 +17,7 @@ public class FieldBuilding : Building
         {
             interval -= incomeInterval;
             RessourceManager.instance.AddCoin(incomeAmount);
-            GameObject go = Instantiate(incomePrefab, transform.position, Quaternion.identity);
-            go.GetComponent<IncomePopup>().SetValue(incomeAmount);
-            go.transform.position = transform.position;
+            collectEffect.Play();
         }
     }
 }

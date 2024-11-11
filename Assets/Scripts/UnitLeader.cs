@@ -31,14 +31,15 @@ public class UnitLeader : Entity
 
         unitSpecialization = newUnitSpe;
 
-        Color squadColor = UnitManager.instance.GetColorFromFaction(newFaction);
+        Sprite squadSprite = UnitManager.instance.GetSpriteFromFaction(newFaction);
 
         for (int i = 0; i < unitNumber; i++)
         {
             GameObject go = Instantiate(unitPrefab, transform.position + new Vector3(formationOffset[i].x, formationOffset[i].y), Quaternion.identity, unitParent);
             Unit newUnit = go.GetComponent<Unit>();
+            go.name = "Unit - " + i;
             units.Add(newUnit);
-            newUnit.Init(this, formationOffset[i], squadColor, faction == Faction.Barbarian);
+            newUnit.Init(this, formationOffset[i], squadSprite, faction == Faction.Barbarian);
         }
 
         unitNumberText.text = unitNumber.ToString();

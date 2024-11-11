@@ -12,18 +12,16 @@ public class UnitManager : MonoBehaviour
 
     int unitSpawned = 0;
 
-    public float delayBetweenEnemySpawn;
-
     GridManager gridManager;
 
     [System.Serializable]
-    public struct FactionColor
+    public struct FactionSprite
     {
         public Faction faction;
-        public Color color;
+        public Sprite sprite;
     }
 
-    public List<FactionColor> factionColors = new();
+    public List<FactionSprite> factionSprites = new();
 
     (int, int) center;
 
@@ -33,6 +31,8 @@ public class UnitManager : MonoBehaviour
     public TextMeshProUGUI fpsText;
 
     List<(Collider2D, Faction)> desactiveColliders = new();
+
+    public WaveManager waveManager;
 
     private void Awake()
     {
@@ -53,7 +53,8 @@ public class UnitManager : MonoBehaviour
         SpawnUnits(new Vector2(-1, 0), 9, Faction.Player);
         SpawnUnits(new Vector2(1, 0), 9, Faction.Player);
 
-        InvokeRepeating("SpawnUnitAtBorder", 1f, delayBetweenEnemySpawn);
+        waveManager.InitWaves(this);
+
         InvokeRepeating("ShowFPS", 0f, .1f);
     }
 
@@ -62,11 +63,11 @@ public class UnitManager : MonoBehaviour
         fpsText.text = unitSpawned.ToString() + " - " + (Mathf.FloorToInt(fps)).ToString();
     }
 
-    private void SpawnUnitAtBorder()
+    public void SpawnUnitAtBorder(int unitNumber = 5)
     {
         (int, int) spawnCell = gridManager.spawnableBorders[Random.Range(0, gridManager.spawnableBorders.Count)];
 
-        var unit = SpawnUnits((spawnCell.Item1 - center.Item1, spawnCell.Item2 - center.Item2), 5, Faction.Barbarian);
+        var unit = SpawnUnits((spawnCell.Item1 - center.Item1, spawnCell.Item2 - center.Item2), unitNumber, Faction.Barbarian);
         unit.SetDestination(new Vector2(0f, 0f));
     }
 
@@ -235,15 +236,15 @@ public class UnitManager : MonoBehaviour
         Destroy(unitLeader.gameObject);
     }
 
-    public Color GetColorFromFaction(Faction faction)
+    public Sprite GetSpriteFromFaction(Faction faction)
     {
-        foreach (FactionColor fc in factionColors)
+        foreach (FactionSprite fc in factionSprites)
         {
             if(fc.faction == faction)
-                return fc.color;
+                return fc.sprite;
         }
 
-        return Color.white;
+        return null;
     }
 }
 

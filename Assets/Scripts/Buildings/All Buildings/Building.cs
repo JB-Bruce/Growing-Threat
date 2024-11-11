@@ -51,10 +51,6 @@ public class Building : CellElement
         return false;
     }
 
-    
-
-
-
     public void SetCell(Cell newCell)
     {
         cellOn = newCell;

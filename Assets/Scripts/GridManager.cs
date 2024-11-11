@@ -42,6 +42,8 @@ public class GridManager : MonoBehaviour
 
     BuildingManager buildingManager;
 
+    [SerializeField] Transform selectionSquare;
+
     private void Awake()
     {
         instance = this;
@@ -248,11 +250,14 @@ public class GridManager : MonoBehaviour
             foreach (Cell n in cells) { n.UnOver(); }
             selectedCell = overedCell;
             selectedCell.Over();
+            selectionSquare.position = selectedCell.transform.position;
+            selectionSquare.gameObject.SetActive(true);
         }
         else
         {
             if (selectedCell != null)
             {
+                selectionSquare.gameObject.SetActive(false);
                 selectedCell.UnOver(); 
                 selectedCell = null;
             }
@@ -277,6 +282,8 @@ public class GridManager : MonoBehaviour
                     overedCell.unitInCell.Merge(ref selectedCell.unitInCell);
 
                     overedCell.unitInCell.SetDestination(path);
+
+                    selectionSquare.position = overedCell.transform.position;
                 }
 
                 if (selectedCell.TrySetDestination(path))
@@ -285,10 +292,12 @@ public class GridManager : MonoBehaviour
                     {
                         n.Over();
                     }
+
+                    selectionSquare.position = overedCell.transform.position;
                 }
 
 
-                selectedCell = overedCell.unitInCell != null ? selectedCell : overedCell;
+                selectedCell = overedCell.unitInCell != null ? overedCell : selectedCell;
 
 
             }

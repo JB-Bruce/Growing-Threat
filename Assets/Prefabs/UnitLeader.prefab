@@ -284,20 +284,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   formationOffset:
-  - {x: 0, y: 0}
+  - {x: 0.02, y: 0}
   - {x: 0.35, y: 0}
   - {x: -0.35, y: 0}
   - {x: 0, y: 0.35}
   - {x: 0, y: -0.35}
-  - {x: 0.35, y: -0.35}
-  - {x: -0.35, y: -0.35}
-  - {x: 0.35, y: 0.35}
-  - {x: -0.35, y: 0.35}
+  - {x: 0.36, y: -0.35}
+  - {x: -0.36, y: -0.35}
+  - {x: 0.36, y: 0.35}
+  - {x: -0.36, y: 0.35}
   faction: 2
   unitPrefab: {fileID: 5970272835401392519, guid: bca5917d52eae6843a7b703ff114a6c0, type: 3}
   units: []
   unitNumberText: {fileID: 5759908688336212664}
   unitSpecialization: 0
+  gridManager: {fileID: 0}
   graphics:
   - {fileID: 21438528503251180}
   - {fileID: 8634678856617343063}
